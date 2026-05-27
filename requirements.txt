@@ -1,5 +1,5 @@
-# 只留这4行，不多一个、不少一个
-streamlit==1.28.0
+streamlit==1.32.2
 opencv-python-headless==4.8.0.74
 numpy==1.24.3
+pandas==2.1.4
 Pillow==10.1.0
