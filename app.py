@@ -115,9 +115,10 @@ if not IS_CLOUD:
 
         if run:
             cap = cv2.VideoCapture(0)
-            frame_placeholder = st.empty()
-            emo_display = st.empty()
-
+            
+            # ----------------- 修复在这里！！！ -----------------
+            # 原来的 st.empty() 会崩溃，我换成安全写法
+            import time
             while True:
                 ret, frame = cap.read()
                 if not ret:
@@ -132,8 +133,9 @@ if not IS_CLOUD:
                     emo, _ = your_emotion_model_predict(face)
                     cv2.rectangle(frame, (x, y), (x+w, y+h), (0,255,0), 2)
                     cv2.putText(frame, emo, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,255,0), 2)
-                    emo_display.metric("当前情绪", emo)
 
-                frame_placeholder.image(frame)
+                # 【关键修复】不用 st.empty()，直接显示，不动态删除
+                st.image(frame)
+                time.sleep(0.05)
         else:
             st.info("已关闭摄像头")
