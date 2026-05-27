@@ -1,5 +1,6 @@
-streamlit==1.28.0
-opencv-python-headless==4.8.0.74
-numpy==1.24.3
-pandas==2.1.4
-Pillow==10.1.0
+# 只留你真正 import 的包，版本锁死、兼容 Linux
+streamlit==1.40.0
+opencv-python-headless==4.10.0.84
+numpy==1.26.4
+pandas==2.2.2
+Pillow==10.3.0
