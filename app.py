@@ -1,5 +1,4 @@
 import streamlit as st
-import cv2
 import numpy as np
 import pandas as pd
 from PIL import Image
@@ -24,24 +23,11 @@ IS_CLOUD = os.environ.get("STREAMLIT_SERVER_HEADLESS") == "true"
 
 # 标签页
 if IS_CLOUD:
-    # 云端：只保留可用的图片分析标签
     tab1 = st.tabs(["📷 图片+文本AI分析"])[0]
 else:
-    # 本地：双标签完整展示
     tab1, tab2 = st.tabs(["📷 图片+文本AI分析", "📹 实时摄像头识别"])
 
-# 加载人脸检测器
-face_detector = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
-
-# 模拟情绪预测函数
-def your_emotion_model_predict(face_img):
-    emotions = ["高兴", "生气", "惊讶", "悲伤", "中性", "害怕", "厌恶"]
-    probs = np.array([0.8, 0.2, 0.5, 0.3, 0.7, 0.4, 0.1])
-    probs = probs / probs.sum()
-    idx = np.argmax(probs)
-    return emotions[idx], probs[idx]
-
-# ========== 图片+文本分析模块（公网/本地都可用） ==========
+# ========== 图片+文本分析模块 ==========
 with tab1:
     st.subheader("上传图片 + 输入文本 → AI自动分析")
     col1, col2 = st.columns(2)
@@ -58,19 +44,8 @@ with tab1:
 
     if analyze and uploaded_file and text.strip():
         st.success("✅ AI 分析完成！")
-
         img_np = np.array(Image.open(uploaded_file))
-        gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
-        faces = face_detector.detectMultiScale(gray, 1.1, 4)
-        res_img = img_np.copy()
-
-        for (x, y, w, h) in faces:
-            face = res_img[y:y+h, x:x+w]
-            emo, score = your_emotion_model_predict(face)
-            cv2.rectangle(res_img, (x, y), (x+w, y+h), (0, 255, 0), 2)
-            cv2.putText(res_img, f"{emo} {score:.0%}", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,255,0), 2)
-
-        st.image(res_img, caption="AI识别结果", width=300)
+        st.image(img_np, caption="AI识别结果", width=300)
 
         # 情绪指标卡片
         st.subheader("📊 情绪指标")
@@ -111,31 +86,4 @@ with tab1:
 if not IS_CLOUD:
     with tab2:
         st.subheader("📹 实时摄像头情绪监测")
-        run = st.checkbox("打开摄像头", value=False)
-
-        if run:
-            cap = cv2.VideoCapture(0)
-            
-            # ----------------- 修复在这里！！！ -----------------
-            # 原来的 st.empty() 会崩溃，我换成安全写法
-            import time
-            while True:
-                ret, frame = cap.read()
-                if not ret:
-                    break
-
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-                faces = face_detector.detectMultiScale(gray, 1.1, 4)
-
-                for (x, y, w, h) in faces:
-                    face = frame[y:y+h, x:x+w]
-                    emo, _ = your_emotion_model_predict(face)
-                    cv2.rectangle(frame, (x, y), (x+w, y+h), (0,255,0), 2)
-                    cv2.putText(frame, emo, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,255,0), 2)
-
-                # 【关键修复】不用 st.empty()，直接显示，不动态删除
-                st.image(frame)
-                time.sleep(0.05)
-        else:
-            st.info("已关闭摄像头")
+        st.info("云端暂不支持摄像头，本地运行可使用")
